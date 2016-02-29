@@ -7,17 +7,36 @@
 //
 
 #import "ViewController.h"
+#import "UITextField+ZPNumberKeyboard.h"
 
 @interface ViewController ()
-
+{
+    UITextField *_moneyField;
+}
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+    self.view.backgroundColor = [UIColor whiteColor];
+    
+    [self initTextFiled];
 }
+
+- (void)initTextFiled
+{
+    _moneyField = [[UITextField alloc] initWithFrame:CGRectMake(50, 200, 200, 40)];
+    _moneyField.font = [UIFont systemFontOfSize:15];
+    _moneyField.layer.borderWidth = 1;
+//    _moneyField.secureTextEntry = YES;
+    _moneyField.layer.borderColor = [UIColor redColor].CGColor;
+    _moneyField.KeyBoardStyle = TextFiledKeyBoardStyleMoney;//要用到支付宝的数字键盘只需加上这句话就可以了
+    [self.view addSubview:_moneyField];
+    
+    
+}
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
