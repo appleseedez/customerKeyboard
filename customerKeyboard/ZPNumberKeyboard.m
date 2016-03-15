@@ -7,7 +7,7 @@
 //
 
 #import "ZPNumberKeyboard.h"
-
+#define HMColor(r, g, b) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:1.0]
 #define KScreen_Width   [UIScreen mainScreen].bounds.size.width
 #define KScreen_Height  [UIScreen mainScreen].bounds.size.height
 #define keyBoardHeight 50.0 //数字键的高度
@@ -20,16 +20,36 @@
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
-        self.backgroundColor =  [UIColor clearColor];
+        self.backgroundColor = HMColor(242, 242, 242);
         self.frame = CGRectMake(frame.origin.x, frame.origin.y, frame.size.width, keyBoardHeight *4);
-        UIImageView *backgroundImageView = [[UIImageView alloc]initWithFrame:
-                                            CGRectMake(0.0f, 0.0f, KScreen_Width, keyBoardHeight *4)];
-        backgroundImageView.image = [UIImage imageNamed:@"szjp_ct"];
-        [self addSubview:backgroundImageView];
-        
+        [self addLines];
         [self initCustomKeyborad];
     }
     return self;
+}
+
+
+
+- (void)addLines
+{
+    for (int i = 0; i <4; i ++) {
+        UIView *HView = [[UIView alloc] init];
+        HView.backgroundColor = HMColor(207, 207, 207);
+        HView.frame = CGRectMake(0, i*keyBoardHeight, 3*KScreen_Width/4, 0.5);
+        if (i==0) {
+            HView.frame = CGRectMake(0, i*keyBoardHeight, KScreen_Width, 0.5);
+        }
+        [self addSubview:HView];
+        
+        UIView *VView = [[UIView alloc]init];
+        VView.backgroundColor = HMColor(207, 207, 207);
+        VView.frame = CGRectMake(i*KScreen_Width/4, 0, 0.5, keyBoardHeight*4);
+        if (i==0) {
+            VView.frame = CGRectMake(0, 0, 0, 0);
+        }
+        [self addSubview:VView];
+
+    }
 }
 
 
@@ -41,44 +61,53 @@
         [NumBtn setFrame:CGRectMake( x%3*(KScreen_Width / 4),  x/3*keyBoardHeight , KScreen_Width / 4, keyBoardHeight)];
         
         
-        if (x <= 9)
-        {
+        if (x <= 9){
+            //数字1~9  小数点
             [NumBtn setTag:(x + 1)];
-        }
-        else if (x == 11)
-        {
+            [NumBtn setTitle:[NSString stringWithFormat:@"%ld",NumBtn.tag] forState:UIControlStateNormal];
+            if (x==9) {
+            [NumBtn setTitle:[NSString stringWithFormat:@"."] forState:UIControlStateNormal];
+            }
+        }else if (x == 11){
+            //退下键盘
             NumBtn.tag = x;
-        }
-        else if (x == 10)
-        {
+            [NumBtn setImage:[UIImage imageNamed:@"resign"] forState:UIControlStateNormal];
+
+        }else if (x == 10){
+            //数字0
             NumBtn.tag = 0;
+            [NumBtn setTitle:[NSString stringWithFormat:@"%ld",NumBtn.tag] forState:UIControlStateNormal];
         }
+        
         [NumBtn setBackgroundColor:[UIColor clearColor]];
-        [NumBtn setBackgroundImage:[UIImage imageNamed:@""] forState:UIControlStateNormal];
-        [NumBtn setBackgroundImage:[UIImage imageNamed:[NSString stringWithFormat:@"szjp_0%ld",NumBtn.tag]] forState:UIControlStateHighlighted];
-        [NumBtn setBackgroundImage:[UIImage imageNamed:[NSString stringWithFormat:@"szjp_0%ld",NumBtn.tag]] forState:UIControlStateSelected];
+        [NumBtn setTitleColor:HMColor(51, 51, 51) forState:UIControlStateNormal];
+        NumBtn.titleLabel.font = [UIFont systemFontOfSize:22];
         NumBtn.adjustsImageWhenHighlighted = TRUE;
+        [NumBtn setBackgroundImage:[self createImageWithColor:HMColor(208, 208, 208)] forState:UIControlStateHighlighted];
         [NumBtn addTarget:self action:@selector(keyboardViewAction:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:NumBtn];
     }
     
-    UIButton *resignBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self initButton:resignBtn withTag:13 height:2 andHighlightImage:@"szjp_end"];
-    
     UIButton *deleteBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self initButton:deleteBtn withTag:12 height:0 andHighlightImage:@"szjp_del"];
+    [self initButton:deleteBtn withFrame:CGRectMake(3*KScreen_Width/4, 0, KScreen_Width/4, keyBoardHeight*2) backgroundColor:[UIColor clearColor] image:[UIImage imageNamed:@"delete"] backgroundImageOfColor:HMColor(208, 208, 208) font:0 title:@"" tag:12];
+    
+    UIButton *resignBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self initButton:resignBtn withFrame:CGRectMake(3*KScreen_Width/4, keyBoardHeight*2, KScreen_Width/4, keyBoardHeight*2) backgroundColor:HMColor(254, 194, 90) image:[UIImage imageNamed:@""] backgroundImageOfColor:HMColor(228, 174, 81) font:22 title:@"确定" tag:13];
 }
 
-- (void)initButton:(UIButton *)btn withTag:(NSInteger)tag height:(CGFloat)height andHighlightImage:(NSString *)imgeName
+- (void)initButton:(UIButton *)btn withFrame:(CGRect)frame backgroundColor:(UIColor *)backgroundColor image:(UIImage *)image backgroundImageOfColor:(UIColor *)backgroundImageColor font:(NSInteger)font title:(NSString *)title tag:(NSInteger)tag
 {
-    btn.frame = CGRectMake(3*KScreen_Width/4, keyBoardHeight*height , KScreen_Width / 4, keyBoardHeight*2);
-    btn.tag = tag;
+    btn.frame = frame;
+    [btn setTitle:title forState:UIControlStateNormal];
+    [btn setBackgroundColor:backgroundColor];
+    [btn setImage:image forState:UIControlStateNormal];
+    [btn setBackgroundImage:[self createImageWithColor:backgroundImageColor] forState:UIControlStateHighlighted];
+    btn.titleLabel.font = [UIFont systemFontOfSize:font];
+    [btn setTitleColor:HMColor(51, 51, 51) forState:UIControlStateNormal];
     [btn addTarget:self action:@selector(keyboardViewAction:) forControlEvents:UIControlEventTouchUpInside];
-    [btn setBackgroundImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@",imgeName]] forState:UIControlStateHighlighted];
-    [btn setBackgroundImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@",imgeName]] forState:UIControlStateSelected];
+    btn.tag = tag;
     [self addSubview:btn];
 }
-
 
 - (void)keyboardViewAction:(UIButton *)sender
 {
@@ -88,9 +117,6 @@
     {
         case 10:
         {
-            [sender setBackgroundImage:[UIImage imageNamed:[NSString stringWithFormat:@"szjp_xsd"]] forState:UIControlStateHighlighted];
-            [sender setBackgroundImage:[UIImage imageNamed:[NSString stringWithFormat:@"szjp_xsd"]] forState:UIControlStateSelected];
-
             // 小数点
             if(self.textFiled.text.length > 0 && [self.textFiled.text rangeOfString:@"." options:NSCaseInsensitiveSearch].location == NSNotFound && self.textFiled.text.length < maxLength)
                 self.textFiled.text = [NSString stringWithFormat:@"%@.",self.textFiled.text];
@@ -100,8 +126,6 @@
         {
             // 消失
             [self.textFiled resignFirstResponder];
-            [sender setBackgroundImage:[UIImage imageNamed:[NSString stringWithFormat:@"szjp_sq"]] forState:UIControlStateHighlighted];
-            [sender setBackgroundImage:[UIImage imageNamed:[NSString stringWithFormat:@"szjp_sq"]] forState:UIControlStateSelected];
 
         }
             break;
@@ -137,6 +161,17 @@
     }
 }
 
-
+- (UIImage *)createImageWithColor:(UIColor *)color
+{
+    CGRect rect = CGRectMake(0.0f, 0.0f, 1.0f, 1.0f);
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, [color CGColor]);
+    CGContextFillRect(context, rect);
+    UIImage *theImage =UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return theImage;
+}
 
 @end
